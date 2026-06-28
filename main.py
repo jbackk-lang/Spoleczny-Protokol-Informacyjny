@@ -25,12 +25,12 @@ from spi import encode, decode
 
 
 def cmd_encode(args: argparse.Namespace) -> None:
-    message = args.message or sys.stdin.read().rstrip("\n")
+    message = args.message if args.message is not None else sys.stdin.read().rstrip("\n")
     print(encode(message, args.key))
 
 
 def cmd_decode(args: argparse.Namespace) -> None:
-    structure = args.structure or sys.stdin.read().rstrip("\n")
+    structure = args.structure if args.structure is not None else sys.stdin.read().rstrip("\n")
     try:
         print(decode(structure, args.key))
     except (ValueError, KeyError) as exc:
@@ -48,13 +48,13 @@ def build_parser() -> argparse.ArgumentParser:
     # encode sub-command
     enc = sub.add_parser("encode", help="Encode a message into a geometric structure")
     enc.add_argument("--key", required=True, help="Shared passphrase")
-    enc.add_argument("--message", default="", help="Plaintext message (or use stdin)")
+    enc.add_argument("--message", default=None, help="Plaintext message (or use stdin)")
     enc.set_defaults(func=cmd_encode)
 
     # decode sub-command
     dec = sub.add_parser("decode", help="Decode a geometric structure to plaintext")
     dec.add_argument("--key", required=True, help="Shared passphrase")
-    dec.add_argument("--structure", default="", help="Geometric structure JSON (or use stdin)")
+    dec.add_argument("--structure", default=None, help="Geometric structure JSON (or use stdin)")
     dec.set_defaults(func=cmd_decode)
 
     return parser

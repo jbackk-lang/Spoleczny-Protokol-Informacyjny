@@ -10,8 +10,7 @@ import json
 import struct
 
 from .key import derive_key, build_permutation
-
-_GRID_SIZE = 16
+from .encoder import _GRID_SIZE, _OFFSET_STEP_X, _OFFSET_STEP_Y, _NONCE_BIT_RANGE
 
 
 def _make_reverse_grid(key: bytes) -> dict[tuple[int, int], int]:
@@ -68,8 +67,8 @@ def decode(structure: str, passphrase: str) -> str:
 
     raw_bytes = bytearray()
     for i, (px, py) in enumerate(points):
-        offset_x = ((nonce_int >> ((i * 3) % 56)) & 0xF) % _GRID_SIZE
-        offset_y = ((nonce_int >> ((i * 5) % 56)) & 0xF) % _GRID_SIZE
+        offset_x = ((nonce_int >> ((i * _OFFSET_STEP_X) % _NONCE_BIT_RANGE)) & 0xF) % _GRID_SIZE
+        offset_y = ((nonce_int >> ((i * _OFFSET_STEP_Y) % _NONCE_BIT_RANGE)) & 0xF) % _GRID_SIZE
         col = (px - offset_x) % _GRID_SIZE
         row = (py - offset_y) % _GRID_SIZE
         try:

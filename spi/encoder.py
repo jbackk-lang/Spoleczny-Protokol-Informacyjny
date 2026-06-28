@@ -25,6 +25,14 @@ from .key import derive_key, build_permutation
 
 _GRID_SIZE = math.ceil(math.sqrt(256))  # 16
 
+# Nonce-offset parameters: prime step values (3, 5) ensure x and y offsets
+# draw from different bit positions of the nonce, reducing correlation.
+# Modulo 56 keeps the right-shift within the 56 useful bits of the 64-bit
+# nonce (the top 8 bits are not sampled to avoid always-zero regions).
+_OFFSET_STEP_X = 3
+_OFFSET_STEP_Y = 5
+_NONCE_BIT_RANGE = 56  # keep shifts within bits [0, 55]
+
 
 def _make_grid(key: bytes) -> dict[int, tuple[int, int]]:
     """Return a mapping: byte_value → (col, row)."""
@@ -56,9 +64,10 @@ def encode(message: str, passphrase: str) -> str:
     points: list[list[int]] = []
     for i, byte_val in enumerate(data):
         col, row = grid[byte_val]
-        # Apply a deterministic per-position offset derived from nonce
-        offset_x = ((nonce_int >> ((i * 3) % 56)) & 0xF) % _GRID_SIZE
-        offset_y = ((nonce_int >> ((i * 5) % 56)) & 0xF) % _GRID_SIZE
+        # Apply a deterministic per-position offset derived from nonce.
+        # Using different prime steps (3, 5) decorrelates x and y offsets.
+        offset_x = ((nonce_int >> ((i * _OFFSET_STEP_X) % _NONCE_BIT_RANGE)) & 0xF) % _GRID_SIZE
+        offset_y = ((nonce_int >> ((i * _OFFSET_STEP_Y) % _NONCE_BIT_RANGE)) & 0xF) % _GRID_SIZE
         px = (col + offset_x) % _GRID_SIZE
         py = (row + offset_y) % _GRID_SIZE
         points.append([px, py])
