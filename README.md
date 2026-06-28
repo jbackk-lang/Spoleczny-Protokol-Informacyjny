@@ -1,3 +1,7 @@
+## Dokumentacja online
+https://jbackk-lang.github.io/
+TIMDR + Λ–τ–ρ na danych 
+
 # TIMDERA — Społeczny Protokół Informacyjny (v1.0)
 
 ## Cel modułu
